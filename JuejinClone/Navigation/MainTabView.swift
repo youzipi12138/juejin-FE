@@ -9,18 +9,9 @@
 //
 
 import SwiftUI
-import UIKit
 
 struct MainTabView: View {
     @State private var selection: AppTab = .home
-
-    init() {
-        let appearance = UITabBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .white
-        UITabBar.appearance().standardAppearance = appearance
-        UITabBar.appearance().scrollEdgeAppearance = appearance
-    }
 
     var body: some View {
         if #available(iOS 26.0, *) {
@@ -44,11 +35,10 @@ struct MainTabView: View {
                 }
             }
         }
-        // 滚动时保持 5 个 tab 全部可见，不收起
+        // 滚动时保持 5 个 tab 全部可见，不收起成一个
         .tabBarMinimizeBehavior(.never)
-        // 白底栏；选中态的 Liquid Glass 胶囊仍然由系统绘制
-        .toolbarBackground(Color.white, for: .tabBar)
-        .toolbarBackground(.visible, for: .tabBar)
+        // 原生玻璃栏下面垫白底
+        .background { TabBarWhiteBackground() }
     }
 
     /// iOS 18：自绘悬浮胶囊。用 safeAreaInset 而不是 ZStack overlay，

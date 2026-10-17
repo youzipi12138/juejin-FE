@@ -2,9 +2,8 @@
 //  CustomCapsuleTabBar.swift
 //  悬浮式底部导航（iOS 18 分支）
 //
-//  原来这里是 .fill(Color.white) —— 一块不透明白矩形，所以看着没有玻璃感。
-//  iOS 18 上没有 Liquid Glass，ultraThinMaterial 就是能拿到的最好毛玻璃。
-//  iOS 26 不走这条分支（见 MainTabView），系统自带的标签栏才是真玻璃。
+//  iOS 26 走系统 TabView（见 MainTabView），自带原生 Liquid Glass；
+//  iOS 18 没有 Liquid Glass，这里用 ultraThinMaterial 拿到能给出的毛玻璃。
 //
 
 import SwiftUI
