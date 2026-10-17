@@ -7,6 +7,19 @@
 import Foundation
 
 enum SampleData {
+    static let profile = Profile(
+        name: "jump123",
+        avatarAsset: "ProfileAvatar",
+        level: "LV.3",
+        jyLevel: "JY.5",
+        badgeCount: 0,
+        likes: 29,
+        favorites: 111,
+        following: 21,
+        checkInDays: 1,
+        topic: "#每天一个知识点#"
+    )
+
     static let categories: [Category] = [
         Category(id: "follow", title: "关注", hasDot: false),
         Category(id: "recommend", title: "推荐", hasDot: false),

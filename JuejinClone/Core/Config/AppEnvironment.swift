@@ -41,6 +41,13 @@ enum AppEnvironment {
         UserDefaults.standard.bool(forKey: "ForceLegacyTabBar")
     }
 
+    /// 启动参数 `-InitialTab profile`：直接从指定 tab 启动。
+    /// 只为了截图/联调子页面，不传就是首页。
+    static var initialTab: AppTab {
+        guard let raw = UserDefaults.standard.string(forKey: "InitialTab") else { return .home }
+        return AppTab(rawValue: raw.lowercased()) ?? .home
+    }
+
     /// 读 Info.plist，顺便挡掉没被替换成功的字面量 "$(FOO)"
     private static func value(for key: String) -> String? {
         guard let raw = Bundle.main.object(forInfoDictionaryKey: key) as? String,

@@ -18,7 +18,8 @@ JuejinClone/                   源码（PBXFileSystemSynchronizedRootGroup）
   Navigation/                  底部 tab：AppTab / MainTabView / CustomCapsuleTabBar
   Features/                    按页面分
     Home/                      首页（TopBar / 分类栏 / 热榜 / 文章流 / FeedStore）
-    Placeholder/               其余 4 个 tab 的占位
+    Profile/                   我（资料头 / 数据 / 快捷入口 / 创作者中心 / 常用功能）
+    Placeholder/               沸点、发现、课程 3 个 tab 的占位
   Core/
     Config/AppEnvironment      全 App 唯一的配置读取入口
     Networking/                APIClient / APIError / FeedService
@@ -50,6 +51,18 @@ xcodebuild -project JuejinClone.xcodeproj -scheme JuejinClone \
 `APIClient` 用它拼 URL。配置错配会在启动时 `preconditionFailure` 当场炸，不会静默回落。
 
 Debug 构建下首页顶栏有个橙色/绿色角标显示当前环境（`DEV` / `PROD`）。
+
+## 个人页
+
+「我」tab 的数据来自 `SampleData.profile`，还没有接登录态和 `/api/v1/user/profile`。
+入口都做成了 Button，点下去先弹一条「还没做」的提示，避免看起来像坏了。
+头像是从设计稿里裁出来的 `ProfileAvatar` imageset，接真实用户时换成服务端图片即可。
+
+联调时可以直接落到某个 tab（只作用于本次启动，不写 UserDefaults）：
+
+```bash
+xcrun simctl launch booted com.pengchen.JuejinClone -InitialTab profile
+```
 
 ## 底栏为什么分两条分支
 

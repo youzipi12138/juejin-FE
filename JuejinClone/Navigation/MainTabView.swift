@@ -14,7 +14,7 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @State private var selection: AppTab = .home
+    @State private var selection: AppTab = AppEnvironment.initialTab
     @State private var showLogin = false
 
     var body: some View {
@@ -84,6 +84,8 @@ struct MainTabView: View {
         switch tab {
         case .home:
             HomeView(onLogin: openLogin)
+        case .profile:
+            ProfileView()
         default:
             PlaceholderView(tab: tab)
         }
