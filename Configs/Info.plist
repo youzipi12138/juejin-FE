@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- 由 Configs/{Debug,Release}.xcconfig 在构建期替换 -->
+	<key>API_BASE_URL</key>
+	<string>$(API_BASE_URL)</string>
+	<key>ENV_NAME</key>
+	<string>$(ENV_NAME)</string>
+
+	<!-- Dev 指向 http://127.0.0.1:8080，iOS 17 起 ATS 默认不放行 IP 明文，
+	     需要这个键放行本地/环回地址。只放行本地网络，
+	     不是 NSAllowsArbitraryLoads，App Review 可接受。 -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+</dict>
+</plist>

@@ -1,0 +1,10 @@
+//  Dev 环境 —— Debug 配置生效
+//  要换后端地址，改下面这一行即可（改完 Clean Build Folder 一次）
+
+#include "Base.xcconfig"
+
+ENV_NAME = dev
+
+// 双斜杠必须写成 /$()/ ：xcconfig 里 "//" 会被当成注释开头，
+// 直接写 http://127.0.0.1:8080 会被静默截断成 "http:"，且不报错。
+API_BASE_URL = http:/$()/127.0.0.1:8080

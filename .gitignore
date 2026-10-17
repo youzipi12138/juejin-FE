@@ -1,0 +1,17 @@
+# 构建产物
+build-device/
+DerivedData/
+build/
+*.ipa
+*.dSYM.zip
+
+# Xcode 用户态
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+
+# macOS
+.DS_Store
+
+# 本机覆盖的环境配置（不要提交真实域名/密钥）
+Configs/*.local.xcconfig

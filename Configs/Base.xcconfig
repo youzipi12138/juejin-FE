@@ -1,0 +1,13 @@
+//  JuejinClone 公共构建配置
+//  环境相关的值（后端地址等）放在 Debug.xcconfig / Release.xcconfig
+//
+//  注意：xcconfig 里 "//" 是行注释符，所以 URL 的 "//" 不能直接写，
+//        要写成 /$()/ 让 "//" 由空变量拼接出来。见 Debug.xcconfig。
+
+// 自定义键不在 INFOPLIST_KEY_ 白名单里，只能走文件。
+// 该文件作基底，Xcode 会把 INFOPLIST_KEY_* 和生成的键合并进来，
+// 所以这里只写"生成不了"的键。（放在 Configs/ 而不是 JuejinClone/，
+// 是为了避开 PBXFileSystemSynchronizedRootGroup 把它自动加进 Copy Bundle Resources）
+INFOPLIST_FILE = Configs/Info.plist
+
+// 部署目标、SWIFT_VERSION 等仍留在 project.pbxproj 里，避免出现被覆盖的"死设置"

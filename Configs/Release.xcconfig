@@ -1,0 +1,10 @@
+//  Prod 环境 —— Release 配置生效
+//  要换后端地址，改下面这一行即可（改完 Clean Build Folder 一次）
+
+#include "Base.xcconfig"
+
+ENV_NAME = prod
+
+// TODO: 换成真实生产域名
+// 双斜杠必须写成 /$()/ ，原因见 Debug.xcconfig
+API_BASE_URL = https:/$()/api.juejin.example
