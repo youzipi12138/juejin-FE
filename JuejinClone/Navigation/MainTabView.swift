@@ -7,13 +7,30 @@
 //  所以 26 走原生，18（没有 Liquid Glass）走自绘胶囊，用 ultraThinMaterial
 //  拿到它在那一版上能给到的最好毛玻璃。
 //
+//  登录页放在 TabView 之上，用横向推入的覆盖层呈现：底栏和首页保持不动，
+//  登录页从右侧盖上来，返回时再横向滑走，避免底栏在底部「凭空出现」。
+//
 
 import SwiftUI
 
 struct MainTabView: View {
     @State private var selection: AppTab = .home
+    @State private var showLogin = false
 
     var body: some View {
+        ZStack {
+            tabContent
+
+            if showLogin {
+                LoginView(onBack: closeLogin)
+                    .transition(.move(edge: .trailing))
+                    .zIndex(1)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var tabContent: some View {
         if #available(iOS 26.0, *) {
             if AppEnvironment.forceLegacyTabBar {
                 legacyTabBar
@@ -50,11 +67,23 @@ struct MainTabView: View {
             }
     }
 
+    private func openLogin() {
+        withAnimation(.smooth(duration: 0.32)) {
+            showLogin = true
+        }
+    }
+
+    private func closeLogin() {
+        withAnimation(.smooth(duration: 0.32)) {
+            showLogin = false
+        }
+    }
+
     @ViewBuilder
     private func destination(for tab: AppTab) -> some View {
         switch tab {
         case .home:
-            HomeView()
+            HomeView(onLogin: openLogin)
         default:
             PlaceholderView(tab: tab)
         }

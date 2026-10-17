@@ -9,6 +9,8 @@
 import SwiftUI
 
 struct HomeView: View {
+    var onLogin: () -> Void = {}
+
     @State private var categoryIndex = 1   // 默认选中「推荐」
     @State private var store = FeedStore()
 
@@ -20,7 +22,7 @@ struct HomeView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 8) {
-                    LoginCard()
+                    LoginCard { onLogin() }
                     HotListCard(items: SampleData.hot)
                     ArticleFeed(articles: store.articles)
                 }
