@@ -5,6 +5,10 @@
 
 ENV_NAME = dev
 
+// Debug 使用独立 Info.plist：dev 后端是公网 HTTP IP，需要放宽 ATS。
+// Release 继续使用 Configs/Info.plist，保持 HTTPS/本地网络限制。
+INFOPLIST_FILE = Configs/Info-Debug.plist
+
 // 双斜杠必须写成 /$()/ ：xcconfig 里 "//" 会被当成注释开头，
-// 直接写 http://127.0.0.1:8080 会被静默截断成 "http:"，且不报错。
-API_BASE_URL = http:/$()/127.0.0.1:8080
+// 直接写 http://49.233.89.175 会被静默截断成 "http:"，且不报错。
+API_BASE_URL = http:/$()/49.233.89.175

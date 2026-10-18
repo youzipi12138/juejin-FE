@@ -4,18 +4,24 @@
 //  协议勾选、底部第三方登录）。
 //
 
+import Foundation
 import SwiftUI
 
 struct LoginView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var auth: AuthStore
 
     /// 由导航方传入，保证能可靠地关掉登录页
     var onBack: (() -> Void)?
 
     @State private var countryCode = "+86"
     @State private var phone = ""
+    @State private var code = ""
     @State private var agreed = false
     @State private var alertMessage: String?
+    @State private var isSending = false
+    @State private var isLoggingIn = false
+    @State private var cooldown = 0
 
     private let countryCodes = ["+86", "+852", "+853", "+886", "+1"]
 
@@ -35,8 +41,24 @@ struct LoginView: View {
                 .padding(.top, 24)
                 .padding(.horizontal, 28)
 
+            codeEntry
+                .padding(.top, 16)
+                .padding(.horizontal, 28)
+
+            if AppEnvironment.isDev {
+                Text("开发环境：验证码请查看服务器 app 容器日志")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textSecondary)
+                    .padding(.top, 8)
+                    .padding(.horizontal, 28)
+            }
+
             agreementRow
                 .padding(.top, 14)
+                .padding(.horizontal, 28)
+
+            loginButton
+                .padding(.top, 16)
                 .padding(.horizontal, 28)
 
             Spacer(minLength: 24)
@@ -136,14 +158,71 @@ struct LoginView: View {
         Button {
             sendCode()
         } label: {
-            Text("获取短信验证码")
+            Text(sendCodeTitle)
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 46)
-                .background(Theme.brand, in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+                .background(sendCodeBackground,
+                            in: RoundedRectangle(cornerRadius: 4, style: .continuous))
         }
         .buttonStyle(.plain)
+        .disabled(isSending || cooldown > 0)
+        .opacity(isSending ? 0.7 : 1)
+    }
+
+    private var sendCodeTitle: String {
+        if cooldown > 0 { return "\(cooldown) 秒后重新获取" }
+        return isSending ? "发送中…" : "获取短信验证码"
+    }
+
+    private var sendCodeBackground: Color {
+        cooldown > 0 ? Theme.textSecondary : Theme.brand
+    }
+
+    private var codeEntry: some View {
+        HStack(spacing: 12) {
+            Text("验证码")
+                .font(.system(size: 15))
+                .foregroundStyle(Theme.textSecondary)
+
+            TextField("请输入 6 位验证码", text: $code)
+                .font(.system(size: 18))
+                .foregroundStyle(Color(hex: 0x1D2129))
+                .keyboardType(.numberPad)
+                .textContentType(.oneTimeCode)
+                .tint(Theme.brand)
+                .onChange(of: code) { _, newValue in
+                    let digits = String(newValue.filter(\.isNumber).prefix(6))
+                    if digits != newValue { code = digits }
+                }
+        }
+        .padding(.horizontal, 14)
+        .frame(height: 46)
+        .background(Color(hex: 0xF5F6F7),
+                    in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+    }
+
+    private var loginButton: some View {
+        Button {
+            login()
+        } label: {
+            HStack(spacing: 8) {
+                if isLoggingIn {
+                    ProgressView().tint(.white)
+                }
+                Text(isLoggingIn ? "登录中…" : "登录 / 注册")
+                    .font(.system(size: 16, weight: .medium))
+            }
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 46)
+            .background(Theme.brand,
+                        in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .disabled(isLoggingIn)
+        .opacity(isLoggingIn ? 0.7 : 1)
     }
 
     // MARK: - 协议
@@ -240,16 +319,80 @@ struct LoginView: View {
         )
     }
 
+    private var phoneDigits: String {
+        phone.filter(\.isNumber)
+    }
+
     private func sendCode() {
-        guard phone.filter(\.isNumber).count == 11 else {
-            alertMessage = "请输入 11 位手机号"
+        guard validatePhoneAndAgreement() else { return }
+
+        isSending = true
+        Task { @MainActor in
+            defer { isSending = false }
+            do {
+                let response = try await auth.sendSMSCode(phone: phoneDigits)
+                if let debugCode = response.debugCode, !debugCode.isEmpty {
+                    code = debugCode
+                    alertMessage = "测试环境验证码已自动填入：\(debugCode)"
+                } else if AppEnvironment.isDev {
+                    alertMessage = "验证码已发送（mock）。请到服务器 app 日志查看验证码。"
+                } else {
+                    alertMessage = "验证码已发送，请查收短信"
+                }
+                startCooldown(seconds: response.retryAfter)
+            } catch {
+                alertMessage = error.localizedDescription
+            }
+        }
+    }
+
+    private func login() {
+        guard validatePhoneAndAgreement() else { return }
+        guard code.count == 6 else {
+            alertMessage = "请输入 6 位验证码"
             return
+        }
+
+        isLoggingIn = true
+        Task { @MainActor in
+            defer { isLoggingIn = false }
+            do {
+                _ = try await auth.login(phone: phoneDigits, code: code)
+                if let onBack {
+                    onBack()
+                } else {
+                    dismiss()
+                }
+            } catch {
+                alertMessage = error.localizedDescription
+            }
+        }
+    }
+
+    private func validatePhoneAndAgreement() -> Bool {
+        guard countryCode == "+86" else {
+            alertMessage = "当前仅支持中国大陆手机号（+86）"
+            return false
+        }
+        guard phoneDigits.range(of: "^1[3-9]\\d{9}$", options: .regularExpression) != nil else {
+            alertMessage = "请输入正确的 11 位手机号"
+            return false
         }
         guard agreed else {
             alertMessage = "请先阅读并同意用户协议和隐私政策"
-            return
+            return false
         }
-        alertMessage = "验证码已发送到 \(countryCode) \(phone)"
+        return true
+    }
+
+    private func startCooldown(seconds: Int) {
+        cooldown = max(0, seconds)
+        Task { @MainActor in
+            while cooldown > 0 {
+                try? await Task.sleep(for: .seconds(1))
+                cooldown -= 1
+            }
+        }
     }
 
     private static func formatPhone(_ raw: String) -> String {
@@ -341,4 +484,5 @@ private struct GitHubMark: Shape {
 
 #Preview {
     LoginView()
+        .environmentObject(AuthStore())
 }

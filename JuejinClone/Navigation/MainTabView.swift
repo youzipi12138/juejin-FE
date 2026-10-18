@@ -15,7 +15,8 @@ import SwiftUI
 
 struct MainTabView: View {
     @State private var selection: AppTab = AppEnvironment.initialTab
-    @State private var showLogin = false
+    /// 启动参数 `-OpenLogin YES` 可直接打开登录页，方便截图/联调
+    @State private var showLogin = UserDefaults.standard.bool(forKey: "OpenLogin")
 
     var body: some View {
         ZStack {
@@ -94,4 +95,5 @@ struct MainTabView: View {
 
 #Preview {
     MainTabView()
+        .environmentObject(AuthStore())
 }

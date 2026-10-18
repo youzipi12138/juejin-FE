@@ -10,7 +10,23 @@
 import SwiftUI
 
 struct ProfileView: View {
-    private let profile = SampleData.profile
+    @EnvironmentObject private var auth: AuthStore
+
+    private var profile: Profile {
+        guard let user = auth.user else { return SampleData.profile }
+        return Profile(
+            name: user.nickname ?? user.username,
+            avatarAsset: "ProfileAvatar",
+            level: "LV.1",
+            jyLevel: "JY.0",
+            badgeCount: 0,
+            likes: 0,
+            favorites: 0,
+            following: 0,
+            checkInDays: 0,
+            topic: ""
+        )
+    }
 
     /// 目前还没接对应的后端/路由，点任何入口先给一个短提示，避免「点了没反应」
     @State private var toast: String?
@@ -47,6 +63,7 @@ struct ProfileView: View {
                             ProfileQuickActions(checkInDays: profile.checkInDays, onSelect: showToast)
                             ProfileCreatorCenter(topic: profile.topic, onSelect: showToast)
                             ProfileCommonTools(onSelect: showToast)
+                            logoutButton
                         }
                         .padding(.horizontal, Theme.gutter)
                         .padding(.bottom, 28)
@@ -72,6 +89,26 @@ struct ProfileView: View {
         .frame(height: 450)
         .ignoresSafeArea(edges: .top)
         .allowsHitTesting(false)
+    }
+
+    @ViewBuilder
+    private var logoutButton: some View {
+        if auth.isLoggedIn {
+            Button {
+                Task { @MainActor in
+                    await auth.logout()
+                }
+            } label: {
+                Text("退出登录")
+                    .font(.system(size: 15))
+                    .foregroundStyle(Color(hex: 0xE5484D))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .background(Color.white,
+                                in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            }
+            .buttonStyle(.plain)
+        }
     }
 
     @ViewBuilder
@@ -104,4 +141,5 @@ struct ProfileView: View {
 
 #Preview {
     ProfileView()
+        .environmentObject(AuthStore())
 }

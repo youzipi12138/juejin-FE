@@ -9,8 +9,10 @@ enum APIError: Error, LocalizedError {
     case invalidURL(String)
     /// 连接层失败（拒绝连接、超时、DNS…）
     case transport(Error)
-    /// 非 2xx
+    /// 非 2xx 且无法解析后端错误信息
     case status(Int)
+    /// 后端返回了业务错误信息
+    case server(Int, String)
     /// 响应体和模型对不上
     case decoding(Error)
 
@@ -22,6 +24,8 @@ enum APIError: Error, LocalizedError {
             return "连不上：\(error.localizedDescription)"
         case .status(let code):
             return "HTTP \(code)"
+        case .server(_, let message):
+            return message
         case .decoding(let error):
             return "解析失败：\(error.localizedDescription)"
         }

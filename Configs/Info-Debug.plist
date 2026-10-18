@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- 由 Configs/Debug.xcconfig 在构建期替换 -->
+	<key>API_BASE_URL</key>
+	<string>$(API_BASE_URL)</string>
+	<key>ENV_NAME</key>
+	<string>$(ENV_NAME)</string>
+
+	<!-- 仅 Debug：dev 后端是公网 HTTP IP，ATS 默认会拦截。
+	     不要把 NSAllowsArbitraryLoads 带进 Release / App Store 构建。 -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+</dict>
+</plist>
